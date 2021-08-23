@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class MenuManager : MonoBehaviour
 {
@@ -24,21 +25,42 @@ public class MenuManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        LoadBestScore();
     }
 
 
    
 
-    public void Exit()
+   
+
+    [System.Serializable]
+    class SaveData
     {
-#if UNITY_EDITOR
-        EditorApplication.ExitPlaymode();
-#else
-        Application.Quit(); // original code to quit Unity player
-#endif
-
+        public int bestScore;
+        public string bestScoreName;
     }
+    public void SaveBestScore()
+    {
+        SaveData data = new SaveData();
+        data.bestScore = bestScore;
+        data.bestScoreName = bestScoreName;
 
-   
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+    public void LoadBestScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            bestScore = data.bestScore;
+            bestScoreName = data.bestScoreName;
+        }
+    }
 }
 
